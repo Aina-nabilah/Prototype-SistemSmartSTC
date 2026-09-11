@@ -94,6 +94,12 @@
     font-size:14px; font-family:inherit; outline:none; transition:border-color .15s ease;
   }
   .field input:focus{border-color:var(--secondary);}
+  .role-picker{display:flex; gap:8px; margin-bottom:20px; background:#F1F5F9; padding:4px; border-radius:10px;}
+  .role-chip{
+    flex:1; text-align:center; padding:10px 8px; font-size:12px; font-weight:600; line-height:1.35;
+    border-radius:8px; color:var(--text-muted); transition:all .15s ease; cursor:pointer;
+  }
+  .role-chip.active{background:var(--card); color:var(--primary); box-shadow:var(--shadow);}
   .field-stack{display:flex; flex-direction:column; align-items:flex-start; gap:10px; margin-bottom:22px;}
   .field-stack label{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-muted);}
   .field-stack .forgot{font-size:13px; color:var(--secondary); font-weight:600;}
@@ -435,9 +441,7 @@
   .role-select-card .rsc-desc{font-size:12px; color:var(--text-muted);}
 
   /* ---------- DEMO ROLE SWITCHER ---------- */
-  .switch-role{position:fixed; bottom:20px; right:20px; z-index:60; background:var(--primary-dark); border-radius:12px; padding:10px; box-shadow:var(--shadow-lg); display:flex; gap:6px;}
-  .switch-role button{padding:8px 12px; border-radius:8px; font-size:12px; font-weight:600; color:rgba(255,255,255,0.6); background:transparent;}
-  .switch-role button.active{background:var(--secondary); color:white;}
+  /* ---------- DEMO ROLE SWITCHER (removed) ---------- */
 </style>
 </head>
 <body>
@@ -461,12 +465,16 @@
         <label>Kata Laluan</label>
         <input type="password" placeholder="••••••••" value="••••••••">
       </div>
+      <div class="role-picker">
+        <div class="role-chip active" data-role="coordinator" onclick="pickRole(this,'coordinator')">Penyelaras STC / Pensyarah JTM</div>
+        <div class="role-chip" data-role="member" onclick="pickRole(this,'member')">Ahli Jawatankuasa STC</div>
+      </div>
       <div class="field-stack">
         <label><input type="checkbox" checked style="width:14px;height:14px;"> Ingat saya</label>
         <span class="forgot">Lupa kata laluan?</span>
       </div>
       <button class="btn-primary" onclick="doLogin()">Log Masuk</button>
-      <div class="login-hint">Demo prototaip — Log Masuk untuk melihat Papan Pemuka Penyelaras/Pensyarah.<br>Guna butang di penjuru kanan bawah untuk tukar peranan.</div>
+      <div class="login-hint">Demo prototaip — pilih peranan di atas, kemudian Log Masuk.<br>Kelayakan sebenar tidak diperlukan.</div>
     </div>
   </div>
 </div>
@@ -1440,7 +1448,7 @@
     </div>
     <div class="modal-foot">
       <button class="btn-outline" onclick="closeModal('modal-view-program')">Tutup</button>
-      <button class="btn-solid" onclick="closeModal('modal-view-program')">Edit Program</button>
+      <button class="btn-solid" onclick="closeModal('modal-view-program'); openModal('modal-edit-program')">Edit Program</button>
     </div>
   </div>
 </div>
@@ -1635,11 +1643,6 @@
   </div>
 </div>
 
-<div class="switch-role" id="switchRole" style="display:none;">
-  <button onclick="switchTo('coordinator')" id="sw-coordinator">Penyelaras/Pensyarah</button>
-  <button onclick="switchTo('member')" id="sw-member">Ahli</button>
-</div>
-
 <div class="lightbox-overlay" id="lightboxOverlay" onclick="if(event.target===this) closeLightbox()">
   <div class="lightbox-close" onclick="closeLightbox()">✕</div>
   <div class="lightbox-content">
@@ -1812,18 +1815,21 @@ function generateReport(btn){
   }, 1400);
 }
 
+let selectedRole = 'coordinator';
+function pickRole(el, role){
+  document.querySelectorAll('.role-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  selectedRole = role;
+}
+
 function doLogin(){
   document.getElementById('loginScreen').style.display = 'none';
-  switchTo('coordinator');
-  document.getElementById('switchRole').style.display = 'flex';
+  switchTo(selectedRole);
 }
 
 function switchTo(role){
   document.querySelectorAll('.app-shell').forEach(s => s.classList.remove('active'));
   document.getElementById('app-'+role).classList.add('active');
-  document.querySelectorAll('.switch-role button').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('sw-'+role);
-  if(btn) btn.classList.add('active');
   closeAllDD();
 }
 
@@ -1846,7 +1852,6 @@ function logout(e){
   e.preventDefault();
   document.querySelectorAll('.app-shell').forEach(s => s.classList.remove('active'));
   document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('switchRole').style.display = 'none';
   closeAllDD();
 }
 
